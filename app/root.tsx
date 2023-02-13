@@ -52,8 +52,8 @@ function App() {
         <Links />
         <NonFlashOfWrongThemeEls ssrTheme={Boolean(sessionTheme)} />
       </head>
-      <body className="h-full text-gray-900 dark:bg-gray-900">
-        <header className="flex items-center justify-between bg-gray-300 px-4 py-2">
+      <body className="h-full bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+        <header className="flex items-center justify-between bg-gray-300 px-4 py-2 dark:bg-gray-700">
           <Link to="/">
             <h1 className="text-2xl font-extrabold tracking-widest">Veddit</h1>
           </Link>
