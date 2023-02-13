@@ -9,8 +9,15 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
 } from "@remix-run/react";
-import { useOptionalUser } from "~/utils";
+import clsx from "clsx";
+import { getThemeSession } from "~/utils/theme.server";
+import {
+  NonFlashOfWrongThemeEls,
+  ThemeProvider,
+  useTheme,
+} from "~/utils/ThemeProvider";
 
 import { getUser } from "./session.server";
 import tailwindStylesheetUrl from "./styles/tailwind.css";
@@ -21,35 +28,43 @@ export const links: LinksFunction = () => {
 
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
-  title: "Remix Notes",
+  title: "Veddit",
   viewport: "width=device-width,initial-scale=1",
 });
 
 export async function loader({ request }: LoaderArgs) {
+  const themeSession = await getThemeSession(request);
+
   return json({
     user: await getUser(request),
+    sessionTheme: themeSession.getTheme(),
   });
 }
 
-export default function App() {
-  const user = useOptionalUser();
+function App() {
+  const { user, sessionTheme } = useLoaderData<typeof loader>();
+  const [theme, setTheme] = useTheme();
 
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className={clsx(theme)}>
       <head>
         <Meta />
         <Links />
+        <NonFlashOfWrongThemeEls ssrTheme={Boolean(sessionTheme)} />
       </head>
-      <body className="h-full text-gray-900">
-        <header className="flex items-center justify-between bg-gray-300 px-10 py-2">
+      <body className="h-full text-gray-900 dark:bg-gray-900">
+        <header className="flex items-center justify-between bg-gray-300 px-4 py-2">
           <Link to="/">
-            <h1 className="text-4xl font-extrabold tracking-tight">
-              Reddit thing
-            </h1>
+            <h1 className="text-2xl font-extrabold tracking-widest">Veddit</h1>
           </Link>
+          <button
+            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+          >
+            Toggle Theme
+          </button>
           {user ? (
-            <div>
-              <div>Signed in as {user.username}</div>
+            <div className="flex gap-2">
+              <div>{user.username}</div>
               <Form action="/logout" method="post">
                 <button type="submit">Logout</button>
               </Form>
@@ -77,5 +92,15 @@ export default function App() {
         <LiveReload />
       </body>
     </html>
+  );
+}
+
+export default function AppWithProviders() {
+  const { sessionTheme } = useLoaderData<typeof loader>();
+
+  return (
+    <ThemeProvider specifiedTheme={sessionTheme}>
+      <App />
+    </ThemeProvider>
   );
 }
