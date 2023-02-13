@@ -5,12 +5,12 @@ import invariant from "tiny-invariant";
 import { z, ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { prisma } from "~/db.server";
-import { getUserId } from "~/session.server";
+import { requireUserId } from "~/session.server";
 
 export async function action({ request, params }: ActionArgs) {
   const postId = params.postId;
   invariant(postId, "postId not found");
-  const userId = await getUserId(request);
+  const userId = await requireUserId(request);
   const formData = await request.formData();
   const content = formData.get("content");
 
